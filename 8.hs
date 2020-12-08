@@ -1,6 +1,5 @@
-import Data.List (nub)
-
 main = readFile "8.txt" >>= print . part1 . map parse . lines -- replace part1 with part2 for part two.
+
 part1 = run1 0 [] 0
 part2 = head . filter (/= 0) . map (run2 0 [] 0) . mutate
 
@@ -27,14 +26,13 @@ run1 acc prev index ops =
         Nop _ -> run1 acc (index:prev) (index + 1) ops
         Acc a -> run1 (acc + a) (index:prev) (index + 1) ops
 
-mutop :: Op -> Op
-mutop (Jmp a) = Nop a
-mutop (Nop a) = Jmp a
-mutop (Acc a) = Acc a
+mutop :: Op -> [Op]
+mutop (Jmp a) = [Nop a, Jmp a]
+mutop (Nop a) = [Jmp a, Nop a]
+mutop (Acc a) = [Acc a]
 
 mutate :: [Op] -> [[Op]]
-mutate (op:ops) = (mutop op : ops) : (nub $ map (op:) $ mutate ops)
-mutate [] = [[]]
+mutate = sequence . map mutate
 
 run2 :: Int -> [Int] -> Int -> [Op] -> Int
 run2 acc prev index ops = 
